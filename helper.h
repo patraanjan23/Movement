@@ -12,8 +12,8 @@ typedef char* string;
 */
 typedef struct _sdl_init
 {
-	SDL_Window *window;
-	SDL_Renderer *renderer;
+    SDL_Window *window;
+    SDL_Renderer *renderer;
 } setup;
 
 //typedef SDL_Rect* enemy;
