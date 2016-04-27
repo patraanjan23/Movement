@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include "helper.h"
 
 int main(int argc, char *argv[])
@@ -13,6 +14,15 @@ int main(int argc, char *argv[])
     int scale = 1;
 
     setup *app = sdl_setup("Movement", pos_x, pos_y, res_x, res_y);
+
+    if (TTF_Init() != 0)
+    {
+        logSDLError("TTF_Init");
+        cleanup("rw", app->renderer, app->window);
+        free(app);
+        SDL_Quit();
+        return -1;
+    }
 
     SDL_Rect container;
     container.x = 20;
@@ -33,10 +43,10 @@ int main(int argc, char *argv[])
     goal.y = res_y / 2 - goal.h / 2;
 
     SDL_Rect winner;
-    winner.h = container.h - 40;
-    winner.w = container.w - 40;
-    winner.x = container.x + 20;
-    winner.y = container.y + 20;
+    winner.h = container.h - 20;
+    winner.w = container.w - 20;
+    winner.x = container.x + 10;
+    winner.y = container.y + 10;
 
     int size = 26;
     SDL_Rect *army	= addEnemy(size);
@@ -94,16 +104,38 @@ int main(int argc, char *argv[])
                 box.x = container.x;//res_x / 2 - box.w / 2;
                 box.y = res_y / 2 - box.h / 2;
             }
-            render(app->renderer, &container, &box, &goal, army, NULL, size);
+            renderHard(app->renderer, &container, &box, &goal, army, NULL, size);
             SDL_Delay(2);
         }
         if (won)
         {
+//            SDL_Delay(100);
             SDL_SetRenderDrawColor(app->renderer, 0xff, 0xff, 0xff, 0xff);
             SDL_RenderFillRect(app->renderer, &winner);
+
+            const string f_name = "fonts/Gidole-Regular.ttf";
+            SDL_Color f_color = {25, 25, 25, 25};
+            SDL_Texture *slogan = renderText(app->renderer, "You have WON the game! BANZAI!!!", f_name, 30, f_color);
+            if (slogan == NULL)
+            {
+                cleanup("rw", app->renderer, app->window);
+                free(army);
+                free(app);
+                TTF_Quit();
+                SDL_Quit();
+                logSDLError("renderText");
+                return -2;
+            }
+            int slgn_h, slgn_w;
+            SDL_QueryTexture(slogan, NULL, NULL, &slgn_w, &slgn_h);
+
+            int x = res_x / 2 - slgn_w / 2;
+            int y = res_y / 2 - slgn_h / 2;
+
+            renderTexture(app->renderer, slogan, x, y, NULL);
+
             SDL_RenderPresent(app->renderer);
         }
-
     }
 
     cleanup("rw", app->renderer, app->window);

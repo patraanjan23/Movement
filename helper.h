@@ -29,5 +29,7 @@ void	logSDLError(char *msg);
 void	cleanup(char *type, ...);
 setup*	sdl_setup(char *title, int posX, int posY, int resX, int resY);
 bool	contains(SDL_Rect *bound, SDL_Rect *obj);
-void	render(SDL_Renderer *ren, SDL_Rect *container, SDL_Rect *box, SDL_Rect *g, SDL_Rect *enemy, SDL_Rect *enemy2, int n);
+void	renderHard(SDL_Renderer *ren, SDL_Rect *container, SDL_Rect *box, SDL_Rect *g, SDL_Rect *enemy, SDL_Rect *enemy2, int n);
 bool	collision(SDL_Rect *box1, SDL_Rect *box2);
+SDL_Texture* renderText(SDL_Renderer *ren, const string msg, const string f_name, unsigned int f_size, SDL_Color color);
+void renderTexture(SDL_Renderer *ren, SDL_Texture *tex, int x, int y, SDL_Rect *clip);

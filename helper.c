@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include "helper.h"
 
 /*
@@ -43,7 +44,7 @@ setup* sdl_setup(char *title, int posX, int posY, int resX, int resY)
     return tmp;
 }
 
-void render(SDL_Renderer *ren, SDL_Rect *container, SDL_Rect *box, SDL_Rect *g, SDL_Rect *enemy, SDL_Rect *enemy2, int n)
+void renderHard(SDL_Renderer *ren, SDL_Rect *container, SDL_Rect *box, SDL_Rect *g, SDL_Rect *enemy, SDL_Rect *enemy2, int n)
 {
     SDL_RenderClear(ren);
     SDL_SetRenderDrawColor(ren, 0, 0, 0x11, 0xff);
@@ -54,7 +55,6 @@ void render(SDL_Renderer *ren, SDL_Rect *container, SDL_Rect *box, SDL_Rect *g, 
     for (int i = 0; i < n; i++)
     {
         SDL_RenderFillRect(ren, enemy + i);
-
     }
     if (enemy2 != NULL)
     {
@@ -68,6 +68,51 @@ void render(SDL_Renderer *ren, SDL_Rect *container, SDL_Rect *box, SDL_Rect *g, 
     SDL_RenderFillRect(ren, g);
     SDL_SetRenderDrawColor(ren, 0x99, 0, 0, 0xff);
     SDL_RenderPresent(ren);
+}
+
+SDL_Texture* renderText(SDL_Renderer *ren, const string msg, const string f_name, unsigned int f_size, SDL_Color color)
+{
+    TTF_Font *font = TTF_OpenFont(f_name, f_size);
+    if (font == NULL)
+    {
+        logSDLError("TTF_OpenFont");
+        return NULL;
+    }
+    SDL_Surface *tmp = TTF_RenderText_Blended(font, msg, color);
+    if (tmp == NULL)
+    {
+        logSDLError("TTF_RenderText_Blended");
+        TTF_CloseFont(font);
+        return NULL;
+    }
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(ren, tmp);
+    if (texture == NULL)
+    {
+        logSDLError("SDL_CreateTextureFromSurface");
+        TTF_CloseFont(font);
+        SDL_FreeSurface(tmp);
+        return NULL;
+    }
+    TTF_CloseFont(font);
+    SDL_FreeSurface(tmp);
+    return texture;
+}
+
+void renderTexture(SDL_Renderer *ren, SDL_Texture *tex, int x, int y, SDL_Rect *clip)
+{
+    SDL_Rect dest;
+    dest.x = x;
+    dest.y = y;
+    if (clip != NULL)
+    {
+        dest.h = clip->h;
+        dest.w = clip->w;
+    }
+    else
+    {
+        SDL_QueryTexture(tex, NULL, NULL, &dest.w, &dest.h);
+    }
+    SDL_RenderCopy(ren, tex, clip, &dest);
 }
 
 /*
